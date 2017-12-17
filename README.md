@@ -1,6 +1,7 @@
-Basic blockchain implementation
+# Description
+Basic blockchain implementation (based on https://hackernoon.com/learn-blockchains-by-building-one-117428612f46)
 
-Endpoints:
+# Endpoints
 * GET /chain
 * POST /mine
 * POST /transactions/new
