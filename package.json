@@ -2,10 +2,28 @@
   "name": "blockchain",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "src/server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "npm run flow:build && node ./lib/server.js",
+    "dev": "watch --wait=1 'flow-remove-types src/ -d lib/ --all --pretty' ./src/ & nodemon ./lib/server.js",
+    "flow:check": "flow check ./src/",
+    "flow:build": "flow-remove-types ./src/ -d ./lib/ --all --pretty",
+    "flow:deps": "flow-typed install"
   },
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "eslint": "^4.13.1",
+    "eslint-config-airbnb": "^16.1.0",
+    "eslint-config-airbnb-flow": "^1.0.2",
+    "flow-bin": "^0.61.0",
+    "flow-remove-types": "^1.2.3",
+    "flow-typed": "^2.2.3",
+    "nodemon": "^1.13.3",
+    "watch": "^1.0.2"
+  },
+  "dependencies": {
+    "express": "^4.16.2",
+    "node-uuid": "^1.4.8"
+  }
 }
