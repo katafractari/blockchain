@@ -1,8 +1,9 @@
 const express = require('express');
 const app = express();
 var bodyParser = require('body-parser');
-const uuid = require('uuid');
-const { initBlockchain, newTransaction, getLastBlock, proofOfWork, hash, newBlock } = require('./blockchain');
+const uuid = require('node-uuid');
+const { initBlockchain, newTransaction, getLastBlock, proofOfWork, hash, newBlock,
+  registerNode, resolveConflicts } = require('./blockchain');
 
 app.use(bodyParser.json());
 
@@ -33,6 +34,16 @@ app.post('/mine', (req, res) => {
     'proof': block['proof'],
     'previous_hash': block['previous_hash'],
   });
+});
+
+app.post('/nodes/register', (req, res) => {
+  registerNode(blockchain, req.body.url);
+  res.send("Added node " + req.body.url);
+});
+
+app.post('/nodes/resolve', (req, res) => {
+  resolveConflicts(blockchain);
+  res.send("Resolve conflicts");
 });
 
 app.post('/transactions/new', (req, res) => {

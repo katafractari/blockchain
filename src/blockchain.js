@@ -1,5 +1,7 @@
 // @flow
 const crypto = require('crypto');
+const url = require('url');
+const request = require('request-promise');
 
 const newTransaction = (blockchain, sender: string, recipient: string, amount: number) => {
   blockchain.currentTransactions.push({
@@ -18,7 +20,13 @@ const getLastBlock = (blockchain) => {
 const initBlockchain = (blockchain) => {
   blockchain.chain = [];
   blockchain.currentTransactions = [];
+  blockchain.nodes = new Set();
   newBlock(blockchain, 100, 1)
+};
+
+const registerNode = (blockchain, nodeUrl) => {
+  const parsedUrl = url.parse(nodeUrl);
+  blockchain.nodes.add(parsedUrl.host);
 };
 
 const newBlock = (blockchain, proof, previousHash) => {
@@ -38,6 +46,49 @@ const newBlock = (blockchain, proof, previousHash) => {
 const hash = (block: Block) => {
   const json: string = JSON.stringify(block, Object.keys(block).sort());
   return crypto.createHash('sha256').update(json).digest('hex');
+};
+
+const validChain = (chain) => {
+  if(chain.length === 0) {
+    return false;
+  }
+  let lastBlock = chain[0];
+  let index = 1;
+
+  while(index < chain.length) {
+    let block = chain[index];
+
+    if(block['previousHash'] !== hash(lastBlock)) {
+      return false;
+    }
+
+    if(validProof(lastBlock['proof'], block['proof'])) {
+      return false;
+    }
+
+    lastBlock = block;
+    index += 1;
+  }
+
+  return true;
+};
+
+const resolveConflicts = async (blockchain) => {
+  let newChain;
+  let maxLength = blockchain.chain.length;
+
+  for(let nodeHost of blockchain.nodes) {
+    let response = await request.get(`http://${nodeHost}/chain`);
+    let json = JSON.parse(response);
+    let length = json.length;
+    let chain = json.chain;
+    console.log(chain);
+
+    if (length > maxLength && validChain(chain)) {
+      maxLength = length;
+      newChain = chain;
+    }
+  }
 };
 
 const proofOfWork = (lastProof) => {
@@ -65,5 +116,7 @@ module.exports = {
   getLastBlock: getLastBlock,
   proofOfWork: proofOfWork,
   hash: hash,
-  newBlock: newBlock
+  newBlock: newBlock,
+  registerNode: registerNode,
+  resolveConflicts: resolveConflicts
 };

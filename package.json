@@ -24,6 +24,7 @@
   },
   "dependencies": {
     "express": "^4.16.2",
-    "node-uuid": "^1.4.8"
+    "node-uuid": "^1.4.8",
+    "request-promise": "^4.2.2"
   }
 }
