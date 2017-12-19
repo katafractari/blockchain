@@ -58,11 +58,11 @@ const validChain = (chain) => {
   while(index < chain.length) {
     let block = chain[index];
 
-    if(block['previousHash'] !== hash(lastBlock)) {
+    if (block['previousHash'] !== hash(lastBlock)) {
       return false;
     }
 
-    if(validProof(lastBlock['proof'], block['proof'])) {
+    if (!validProof(lastBlock['proof'], block['proof'])) {
       return false;
     }
 
@@ -88,6 +88,7 @@ const resolveConflicts = async (blockchain) => {
     let length = json.length;
     let chain = json.chain;
 
+    console.log(length, maxLength, validChain(chain), chain);
     if (length > maxLength && validChain(chain)) {
       maxLength = length;
       newChain = chain;
@@ -96,7 +97,7 @@ const resolveConflicts = async (blockchain) => {
 
   if (newChain) {
     console.log('New chain acknowledged through consensus ', newChain);
-    blockchain = newChain;
+    blockchain.chain = newChain;
     return true;
   }
 
@@ -116,10 +117,7 @@ const proofOfWork = (lastProof) => {
 const validProof = (lastProof, proof) => {
   let guess = `${lastProof}${proof}`;
   let guessHash = crypto.createHash('sha256').update(guess).digest('hex');
-  if(guessHash.indexOf("0000") === 0) {
-    console.log('guess', guess.toString());
-    console.log(guessHash);
-  }
+
   return guessHash.indexOf("0000") === 0;
 };
 

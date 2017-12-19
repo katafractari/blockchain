@@ -1,9 +1,11 @@
 const express = require('express');
 const app = express();
-var bodyParser = require('body-parser');
+const bodyParser = require('body-parser');
 const uuid = require('node-uuid');
 const { initBlockchain, newTransaction, getLastBlock, proofOfWork, hash, newBlock,
   registerNode, resolveConflicts } = require('./blockchain');
+
+const PORT = process.env.PORT || 3000;
 
 app.use(bodyParser.json());
 
@@ -18,13 +20,10 @@ app.post('/mine', (req, res) => {
   const lastBlock = getLastBlock(blockchain);
   const lastProof = lastBlock['proof'];
   const proof = proofOfWork(lastProof);
-  console.log('lastProof', lastProof);
-  console.log('proof', proof);
 
   newTransaction(blockchain, "0", nodeUid, 1);
 
   const previousHash = hash(lastBlock);
-  console.log(previousHash)
   const block = newBlock(blockchain, proof, previousHash);
 
   res.json({
@@ -66,5 +65,5 @@ app.get('/chain', (req, res) => {
   });
 });
 
-app.listen(3000, () => console.log('Magic happening on port 3000!'));
+app.listen(PORT, () => console.log(`Magic happening on port ${PORT}!`));
 
