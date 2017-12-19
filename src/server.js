@@ -38,12 +38,18 @@ app.post('/mine', (req, res) => {
 
 app.post('/nodes/register', (req, res) => {
   registerNode(blockchain, req.body.url);
-  res.send("Added node " + req.body.url);
+  res.jsonp(blockchain.nodes);
+});
+
+app.get('/nodes', (req, res) => {
+  res.jsonp(blockchain.nodes);
 });
 
 app.post('/nodes/resolve', (req, res) => {
-  resolveConflicts(blockchain);
-  res.send("Resolve conflicts");
+  const chainReplaced = resolveConflicts(blockchain);
+  res.json({
+    chainReplaced: chainReplaced
+  });
 });
 
 app.post('/transactions/new', (req, res) => {

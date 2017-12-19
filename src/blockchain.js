@@ -20,13 +20,13 @@ const getLastBlock = (blockchain) => {
 const initBlockchain = (blockchain) => {
   blockchain.chain = [];
   blockchain.currentTransactions = [];
-  blockchain.nodes = new Set();
+  blockchain.nodes = [];
   newBlock(blockchain, 100, 1)
 };
 
 const registerNode = (blockchain, nodeUrl) => {
   const parsedUrl = url.parse(nodeUrl);
-  blockchain.nodes.add(parsedUrl.host);
+  blockchain.nodes.push(parsedUrl.host);
 };
 
 const newBlock = (blockchain, proof, previousHash) => {
@@ -77,18 +77,31 @@ const resolveConflicts = async (blockchain) => {
   let newChain;
   let maxLength = blockchain.chain.length;
 
-  for(let nodeHost of blockchain.nodes) {
+  if (blockchain.nodes.length === 0) {
+    console.log('There are no nodes in the network!');
+    return false;
+  }
+
+  for (let nodeHost of blockchain.nodes) {
     let response = await request.get(`http://${nodeHost}/chain`);
     let json = JSON.parse(response);
     let length = json.length;
     let chain = json.chain;
-    console.log(chain);
 
     if (length > maxLength && validChain(chain)) {
       maxLength = length;
       newChain = chain;
     }
   }
+
+  if (newChain) {
+    console.log('New chain acknowledged through consensus ', newChain);
+    blockchain = newChain;
+    return true;
+  }
+
+  console.log('No new chain acknowledged');
+  return false;
 };
 
 const proofOfWork = (lastProof) => {
